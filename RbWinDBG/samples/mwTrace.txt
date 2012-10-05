@@ -1,0 +1,101 @@
+----
+ExploitTrace started on: 2012-09-14 21:43:41 +0530
+Process Handle: 0x00000768
+EP: 0x300010cc
+Executable Path: C:\Program Files\Microsoft Office\Office12\WINWORD.EXE
+LoadLibrary: wwlib.dll
+LoadLibrary: C:\Program Files\Common Files\Microsoft Shared\office12\mso.dll
+Error Occurred: undefined method `read_wstring' for #<RbWinDBG::SimpleWrapper:0x1638ba0>
+samples/MalwareTrace.rb:12:in `block in setup_filesystem_monitor'
+C:/Documents and Settings/User1/Desktop/Tools/Debuggers/RbWinDBG/lib/rbDbg.rb:104:in `block in bpx'
+C:/Lib/metasm/metasm/debug.rb:757:in `call'
+C:/Lib/metasm/metasm/debug.rb:757:in `block in post_evt_bp'
+C:/Lib/metasm/metasm/debug.rb:735:in `each'
+C:/Lib/metasm/metasm/debug.rb:735:in `post_evt_bp'
+C:/Lib/metasm/metasm/debug.rb:658:in `evt_bpx'
+C:/Lib/metasm/metasm/os/windows.rb:1924:in `update_dbgev'
+C:/Lib/metasm/metasm/os/windows.rb:2026:in `do_waitfordebug'
+C:/Lib/metasm/metasm/os/windows.rb:2020:in `do_wait_target'
+C:/Lib/metasm/metasm/debug.rb:901:in `wait_target'
+C:/Lib/metasm/metasm/debug.rb:923:in `continue_wait'
+C:/Lib/metasm/metasm/debug.rb:993:in `run_forever'
+C:/Documents and Settings/User1/Desktop/Tools/Debuggers/RbWinDBG/lib/rbDbg.rb:162:in `start'
+samples/MalwareTrace.rb:73:in `<main>'
+----
+ExploitTrace started on: 2012-09-14 21:44:20 +0530
+Process Handle: 0x00000768
+EP: 0x300010cc
+Executable Path: C:\Program Files\Microsoft Office\Office12\WINWORD.EXE
+LoadLibrary: wwlib.dll
+LoadLibrary: C:\Program Files\Common Files\Microsoft Shared\office12\mso.dll
+LoadLibrary: C:\WINDOWS\system32\ADVAPI32.DLL
+LoadLibrary: rpcrt4.dll
+LoadLibrary: uxtheme.dll
+LoadLibrary: Comctl32.dll
+LoadLibrary: C:\WINDOWS\system32\KERNEL32.DLL
+LoadLibrary: comctl32.dll
+LoadLibrary: comctl32.dll
+LoadLibrary: Comctl32.dll
+LoadLibrary: OLE32
+LoadLibrary: OLE32.DLL
+----
+ExploitTrace started on: 2012-09-14 21:46:16 +0530
+Process Handle: 0x00000768
+EP: 0x300010cc
+Executable Path: C:\Program Files\Microsoft Office\Office12\WINWORD.EXE
+LoadLibrary: wwlib.dll
+LoadLibrary: C:\Program Files\Common Files\Microsoft Shared\office12\mso.dll
+Error Occurred: undefined method `read_wstring' for #<RbWinDBG::SimpleWrapper:0x1634c70>
+samples/MalwareTrace.rb:12:in `block in setup_filesystem_monitor'
+C:/Documents and Settings/User1/Desktop/Tools/Debuggers/RbWinDBG/lib/rbDbg.rb:104:in `block in bpx'
+C:/Lib/metasm/metasm/debug.rb:757:in `call'
+C:/Lib/metasm/metasm/debug.rb:757:in `block in post_evt_bp'
+C:/Lib/metasm/metasm/debug.rb:735:in `each'
+C:/Lib/metasm/metasm/debug.rb:735:in `post_evt_bp'
+C:/Lib/metasm/metasm/debug.rb:658:in `evt_bpx'
+C:/Lib/metasm/metasm/os/windows.rb:1924:in `update_dbgev'
+C:/Lib/metasm/metasm/os/windows.rb:2026:in `do_waitfordebug'
+C:/Lib/metasm/metasm/os/windows.rb:2020:in `do_wait_target'
+C:/Lib/metasm/metasm/debug.rb:901:in `wait_target'
+C:/Lib/metasm/metasm/debug.rb:923:in `continue_wait'
+C:/Lib/metasm/metasm/debug.rb:993:in `run_forever'
+C:/Documents and Settings/User1/Desktop/Tools/Debuggers/RbWinDBG/lib/rbDbg.rb:162:in `start'
+samples/MalwareTrace.rb:75:in `<main>'
+----
+ExploitTrace started on: 2012-09-14 21:46:44 +0530
+Process Handle: 0x00000768
+EP: 0x300010cc
+Executable Path: C:\Program Files\Microsoft Office\Office12\WINWORD.EXE
+Error Occurred: undefined method `read_wstring' for #<RbWinDBG::SimpleWrapper:0x16340a0>
+samples/MalwareTrace.rb:12:in `block in setup_filesystem_monitor'
+C:/Documents and Settings/User1/Desktop/Tools/Debuggers/RbWinDBG/lib/rbDbg.rb:104:in `block in bpx'
+C:/Lib/metasm/metasm/debug.rb:757:in `call'
+C:/Lib/metasm/metasm/debug.rb:757:in `block in post_evt_bp'
+C:/Lib/metasm/metasm/debug.rb:735:in `each'
+C:/Lib/metasm/metasm/debug.rb:735:in `post_evt_bp'
+C:/Lib/metasm/metasm/debug.rb:658:in `evt_bpx'
+C:/Lib/metasm/metasm/os/windows.rb:1924:in `update_dbgev'
+C:/Lib/metasm/metasm/os/windows.rb:2026:in `do_waitfordebug'
+C:/Lib/metasm/metasm/os/windows.rb:2020:in `do_wait_target'
+C:/Lib/metasm/metasm/debug.rb:901:in `wait_target'
+C:/Lib/metasm/metasm/debug.rb:923:in `continue_wait'
+C:/Lib/metasm/metasm/debug.rb:993:in `run_forever'
+C:/Documents and Settings/User1/Desktop/Tools/Debuggers/RbWinDBG/lib/rbDbg.rb:162:in `start'
+samples/MalwareTrace.rb:75:in `<main>'
+----
+ExploitTrace started on: 2012-09-14 21:48:20 +0530
+Process Handle: 0x00000768
+EP: 0x300010cc
+Executable Path: C:\Program Files\Microsoft Office\Office12\WINWORD.EXE
+LoadLibrary: wwlib.dll
+LoadLibrary: C:\Program Files\Common Files\Microsoft Shared\office12\mso.dll
+LoadLibrary: uxtheme.dll
+LoadLibrary: Comctl32.dll
+LoadLibrary: C:\WINDOWS\system32\ADVAPI32.DLL
+LoadLibrary: C:\WINDOWS\system32\KERNEL32.DLL
+LoadLibrary: comctl32.dll
+LoadLibrary: comctl32.dll
+LoadLibrary: Comctl32.dll
+LoadLibrary: rpcrt4.dll
+LoadLibrary: OLE32
+LoadLibrary: OLE32.DLL
