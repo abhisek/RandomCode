@@ -143,7 +143,8 @@ module RbWinDBG
 			@dbg.memory[addr, data.size] = data
 		end
 		
-		def minidump(type)
+		def minidump(path)
+			::RbWinDBG::DbgHelp.create_minidump(@process.pid, path)
 		end
 		
 		def virtual_alloc(size, loc = nil, alloc_type = nil, prot = nil)

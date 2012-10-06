@@ -13,7 +13,11 @@ if __FILE__ == $0
 
 	dbg.on_exception do |ei|
 		puts "Exeption: #{ei.inspect}"
-		dbg.stop if ei[:type] == 'access violation'
+		
+		if ei[:type] == 'access violation'
+			dbg.minidump("C:\\AA\\1.dmp")
+			dbg.stop
+		end
 	end
 	
 	puts 'Starting Debug Loop'
