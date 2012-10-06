@@ -1,55 +1,29 @@
 module RbWinDBG
 	
-	class SimpleUtils
-		def initialize(dbg)
-			@dbg = dbg
-		end
-		
-		def read_wstring(addr)
-			i = 0
-			loop do
-				break if @dbg.memory[addr + i, 2].unpack('v').first() == 0
-				i += 2
-			end
-			
-			@dbg.memory[addr, i].gsub("\x00", "")
-		end
-		
-		def read_string(addr)
-			i = 0
-			loop do
-				break if @dbg.memory[addr + i, 1].unpack('C').first() == 0
-				i += 1
-			end
-			
-			@dbg.memory[addr, i]
-		end
-		
-		def ptr_at(addr)
-			@dbg.memory[addr, 4].unpack('V').first()
-		end
-		
-		def ptr_set(addr, v)
-			@dbg.memory[addr, 4] = [v].pack('V')
-		end
-		
-		def ptr_set64(addr, v)
-			@dbg.memory[addr, 8] = [v].pack('Q')
-		end
-	end
-	
 	class SimpleWrapper
 	
 		def initialize(dbg, pe, process)
-			@dbg 			= dbg
-			@pe				= pe
-			@process		= process
-			@utils			= SimpleUtils.new(dbg)
-			@modules_map	= {}
+			$rbWinDbgConfig ||= {}
+			
+			@dbg 						= dbg
+			@pe							= pe
+			@process					= process
+			@utils						= SimpleUtils.new(dbg)
+			@modules_map				= {}
+			@queued_name_breakpoints 	= []
 			
 			on_entrypoint do
 				update_module_map!
+				
+				on_library_load do
+					update_module_map!
+					set_queued_name_breakpoints!
+				end
 			end
+			
+			@dbg.set_log_proc(nil) do
+				# Ignore Logs from Metasm
+			end unless $rbWinDbgConfig[:metasm_debug]
 		end
 		
 		attr_reader :dbg
@@ -58,23 +32,55 @@ module RbWinDBG
 		attr_reader :utils
 		
 		# Event Handlers
-		def on_entrypoint
-			if block_given?
-				self.bpx(self.entrypoint, true) do
-					yield()
+		def on_entrypoint(&block)
+			self.bpx(self.entrypoint, true) do
+				block.call()
+			end
+		end
+		
+		def on_library_load(&block)
+			self.bpx(self.resolve_name('kernel32.dll!LoadLibraryW')) do
+				ret = self.utils.ptr_at(self.get_reg_value(:esp))
+				lib = self.utils.read_wstring(self.utils.ptr_at(self.get_reg_value(:esp) + 4))
+				self.bpx(ret, true) do
+					block.call(lib)
 				end
 			end
 		end
 		
-		def on_library_load
-			if block_given?
-				self.bpx(self.resolve_name('kernel32.dll!LoadLibraryW')) do
-					ret = self.utils.ptr_at(self.get_reg_value(:esp))
-					lib = self.utils.read_wstring(self.utils.ptr_at(self.get_reg_value(:esp) + 4))
-					self.bpx(ret, true) do
-						yield(lib)
-					end
-				end
+		def on_exception(&block)
+			@dbg.callback_exception = proc do |h|
+				block.call(h) if h[:type].to_s !~ /breakpoint/i
+			end
+		end
+		
+		def on_process_start(&block)
+			@dbg.callback_newprocess = proc do |h|
+				block.call(h)
+			end
+		end
+		
+		def on_process_exit(&block)
+			@dbg.callback_endprocess = proc do |h|
+				block.call(h)
+			end
+		end
+		
+		def on_thread_start(&block)
+			@dbg.callback_newthread = proc do |h|
+				block.call(h)
+			end
+		end
+		
+		def on_thread_exit(&block)
+			@dbg.callback_endthread = proc do |h|
+				block.call(h)
+			end
+		end
+		
+		def on_debug_string(&block)
+			@dbg.callback_debugstring = proc do |h|
+				block.call(h)
 			end
 		end
 		
@@ -86,7 +92,8 @@ module RbWinDBG
 			lib, name = name.split('!')
 			lib_path = resolve_lib_path(lib)
 			
-			@modules_map[lib_path][name]
+			return @modules_map[lib_path][name] unless @modules_map[lib_path].nil?
+			nil
 		end
 		
 		def resolve_lib_path(libname)
@@ -96,19 +103,36 @@ module RbWinDBG
 		end
 		
 		def entrypoint
+			# TODO: Fetch Image Base from PEB
 			@pe.optheader.image_base + @pe.optheader.entrypoint
 		end
 		
-		def bpx(addr, one_time = false)
-			@dbg.bpx(addr, one_time) do
-				yield()
+		def qbpx(name, one_time = false, &block)
+			addr = self.resolve_name(name)
+			if addr.nil?
+				@queued_name_breakpoints << {:name => name, :proc => block }
+			else
+				self.bpx(addr, one_time) { block.call }
 			end
 		end
 		
-		def bpr(addr_range = {}, one_time = false)
+		def bpx(addr, one_time = false, &block)
+			addr = self.resolve_name(addr) if addr.is_a?(String)
+			@dbg.bpx(addr, one_time, nil) { block.call } unless addr.nil?
 		end
 		
-		def bpw(addr_range = {}, one_time = false)
+		def bpr(addr, mLen = 1, one_time = false, &block)
+			addr = self.resolve_name(addr) if addr.is_a?(String)
+			@dbg.hwbp(addr, :r, mLen, nil) { block.call } unless addr.nil?
+		end
+		
+		def bpw(addr, mLen = 1, one_time = false, &block)
+			addr = self.resolve_name(addr) if addr.is_a?(String)
+			@dbg.hwbp(addr, :w, mLen, nil) { block.call } unless addr.nil?
+		end
+		
+		def stack_trace(depth = 500)
+			@dbg.stacktrace(depth)
 		end
 		
 		def read_memory(addr, len)
@@ -117,6 +141,9 @@ module RbWinDBG
 		
 		def write_memory(addr, data)
 			@dbg.memory[addr, data.size] = data
+		end
+		
+		def minidump(type)
 		end
 		
 		def virtual_alloc(size, loc = nil, alloc_type = nil, prot = nil)
@@ -178,15 +205,25 @@ module RbWinDBG
 			@dbg.detach
 		end
 		
+		def set_queued_name_breakpoints!
+			@queued_name_breakpoints.each do |qnbp|
+				# TODO: Set the breakpoint and delete the entry
+			end
+		end
+		
 		def update_module_map!
 			@process.modules.each do |mod|
-				@modules_map[mod.path] ||= {}
+				next if mod.path.nil?
+				next unless @modules_map[mod.path].nil?
+				
+				@modules_map[mod.path] = {}
 				
 				mod_pe = Metasm::LoadedPE.load(@dbg.memory[mod.addr, mod.size])
 				mod_pe.decode_header
 				mod_pe.decode_exports
 				
 				next if mod_pe.export.nil?
+				next if mod_pe.export.exports.nil?
 				
 				mod_pe.export.exports.each do |exp|
 					next if exp.name.nil? and exp.ordinal.nil?
@@ -216,7 +253,14 @@ module RbWinDBG
 		SimpleWrapper.new(dbg, pe, process)
 	end
 	
-	def self.init
+	def self.init(rbWinDbgConfig =
+					{
+						:metasm_debug => false
+					}
+				 )
+		
+		$rbWinDbgConfig = rbWinDbgConfig
+		
 		Metasm::WinOS.get_debug_privilege
 	end
 end

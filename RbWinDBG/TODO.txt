@@ -1,0 +1,3 @@
+* Resolve Names on Library Load
+* Auto Resolve Name to addr for bpx
+* MiniDump for Target Process
