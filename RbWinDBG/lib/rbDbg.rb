@@ -257,7 +257,10 @@ module RbWinDBG
 		pe.decode_header
 		pe.decode_imports
 		
-		SimpleWrapper.new(dbg, pe, process)
+		sdbg = SimpleWrapper.new(dbg, pe, process)
+		sdbg.update_module_map!
+		
+		sdbg
 	end
 	
 	def self.start(path)
