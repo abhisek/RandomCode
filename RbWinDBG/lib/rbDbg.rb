@@ -24,6 +24,7 @@ module RbWinDBG
 			@dbg.set_log_proc(nil) do
 				# Ignore Logs from Metasm
 			end unless $rbWinDbgConfig[:metasm_debug]
+			
 		end
 		
 		attr_reader :dbg
@@ -186,6 +187,10 @@ module RbWinDBG
 			Metasm::WinOS::Thread.new(tid.to_i)
 		end
 		
+		def single_step
+			@dbg.singlestep
+		end
+		
 		def start
 			@dbg.run_forever
 		end
@@ -194,8 +199,7 @@ module RbWinDBG
 			self.start()
 		end
 		
-		def loop
-			self.start()
+		def run_once
 		end
 		
 		def stop
@@ -210,6 +214,16 @@ module RbWinDBG
 			@queued_name_breakpoints.each do |qnbp|
 				# TODO: Set the breakpoint and delete the entry
 			end
+		end
+		
+		def get_module(dll_name)
+			@process.modules.each do |mod|
+				next if mod.path.to_s.empty?
+				
+				return mod if File.basename(mod.path).dowcase == dll_name.to_s.downcase
+			end
+			
+			nil
 		end
 		
 		def update_module_map!
