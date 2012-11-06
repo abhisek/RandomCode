@@ -4,6 +4,8 @@ module RbWinDBG
 	# Snapshot Target Process threads and Memory Blocks
 	# 	Uses PyDBG algorithm (as described by Pedram Amini in his Fuzzing book)
 	#
+	$rbWinDbgSnapshotDebug = false
+	
 	class Win32ProcessSnapshot
 		
 		attr_reader :snapshot_info
@@ -55,7 +57,7 @@ module RbWinDBG
 			@thread_snapshot = {}
 			
 			@dbg.threads.each do |tid|
-				puts "Saving Context for TID: #{tid}"
+				puts "Saving Context for TID: #{tid}" if $rbWinDbgSnapshotDebug
 				
 				@thread_snapshot[tid] = @dbg.get_thread_context(tid)
 			end
@@ -66,7 +68,7 @@ module RbWinDBG
 		def restore_threads()
 			# We restore active threads only.
 			@dbg.threads.each do |tid|
-				puts "Restoring Context for TID: #{tid}" unless @thread_snapshot[tid].nil?
+				puts "Restoring Context for TID: #{tid}" unless @thread_snapshot[tid].nil? or (!$rbWinDbgSnapshotDebug)
 				
 				@dbg.set_thread_context(tid, @thread_snapshot[tid]) unless @thread_snapshot[tid].nil?
 			end
@@ -94,9 +96,12 @@ module RbWinDBG
 				next unless (mbi.state & ::Metasm::WinAPI::MEM_COMMIT) > 0
 				next if protection_filters.collect {|e| e if ((mbi.protect & e) > 0)}.compact.size() > 0
 				
-				puts "Saving Memory Block - BaseAddr: 0x%08x Size: 0x%08x" % [mbi.baseaddress, mbi.regionsize]
+				puts "Saving Memory Block - BaseAddr: 0x%08x Size: 0x%08x" % 
+					[mbi.baseaddress, mbi.regionsize] if $rbWinDbgSnapshotDebug
 				
 				mem_data = @dbg.read_memory(mbi.baseaddress, mbi.regionsize)
+				raise "Data Inconsistency in Snapshot" if mem_data.size != mbi.regionsize
+				
 				@memory_snapshot << [mbi, mem_data]
 				
 				@snapshot_info[:memory_block_count] += 1
@@ -109,7 +114,8 @@ module RbWinDBG
 				mbi = ms[0]
 				mem_data = ms[1]
 				
-				puts "Restoring Memory Block - BaseAddr: 0x%08x Size: 0x%08x" % [mbi.baseaddress, mbi.regionsize]
+				puts "Restoring Memory Block - BaseAddr: 0x%08x Size: 0x%08x" % 
+					[mbi.baseaddress, mbi.regionsize] if $rbWinDbgSnapshotDebug
 				
 				@dbg.write_memory(mbi.baseaddress, mem_data)
 			end
