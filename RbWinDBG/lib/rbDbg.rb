@@ -136,6 +136,10 @@ module RbWinDBG
 			@dbg.stacktrace(depth)
 		end
 		
+		def memory
+			@dbg.memory
+		end
+		
 		def read_memory(addr, len)
 			@dbg.memory[addr.to_i, len.to_i]
 		end
@@ -160,7 +164,7 @@ module RbWinDBG
 			Metasm::WinOS.inject_run_shellcode(@process, code.to_s)
 		end
 		
-		def context
+		def current_context
 			@dbg.ctx
 		end
 
@@ -179,12 +183,26 @@ module RbWinDBG
 			@dbg.set_reg_value(reg.to_sym, value.to_i)
 		end
 		
+		# Returns thread ids
 		def threads
 			@process.threads
 		end
 		
 		def get_thread(tid)
-			Metasm::WinOS::Thread.new(tid.to_i)
+			Metasm::WinOS::Thread.new(tid.to_i, nil, @process)
+		end
+		
+		def get_thread_handle(tid)
+			self.get_thread(tid).handle()
+		end
+		
+		def get_thread_context(tid)
+			self.get_thread(tid).context()
+		end
+		
+		def set_thread_context(tid, context)
+			# FAILS! for WOW64
+			::Metasm::WinAPI.setthreadcontext(self.get_thread_handle(tid), context)
 		end
 		
 		def single_step
@@ -220,7 +238,7 @@ module RbWinDBG
 			@process.modules.each do |mod|
 				next if mod.path.to_s.empty?
 				
-				return mod if File.basename(mod.path).dowcase == dll_name.to_s.downcase
+				return mod if File.basename(mod.path).downcase == dll_name.to_s.downcase
 			end
 			
 			nil
@@ -247,6 +265,33 @@ module RbWinDBG
 					@modules_map[mod.path][exp.name || "ORD_#{exp.ordinal}"] = mod.addr + exp.target_rva
 				end
 			end
+		end
+		
+		def disassemble(data)
+			# 
+			# This will return an instance of Metasm::Disassembler which can be used as:
+			#
+			#	irb(main):029:0> dasm.decoded
+			#	=> {0=>0 jmp 0eh ; x:0eh}
+			#	
+			#	dasm.decode is a Hash with key being the addr and value being a
+			#	Metasm::DecodedInstruction
+			#
+			::Metasm::Shellcode.disassemble(Metasm::Ia32.new, data)
+		end
+		
+		def snapshot_process
+			@snapshot = Win32ProcessSnapshot.new(self)
+			@snapshot.snapshot!
+			
+			return @snapshot
+		end
+		
+		def snapshot_restore_process(snapshot = nil)
+			s = snapshot || @snapshot
+			s.restore!
+			
+			return s
 		end
 	end
 	

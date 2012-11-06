@@ -4,6 +4,7 @@ $:.unshift(File.join(File.dirname(__FILE__), 'lib'))
 require 'metasm'
 require 'rbDbg'
 require 'rbDbgUtils'
+require 'rbDbgSnapshot'
 require 'rbMiniDump'
 
 $VERBOSE = false
