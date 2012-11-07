@@ -140,12 +140,28 @@ module RbWinDBG
 			@dbg.memory
 		end
 		
-		def read_memory(addr, len)
+		def read_memory_cached(add, len)
 			@dbg.memory[addr.to_i, len.to_i]
+		end
+		
+		def read_memory(addr, len)
+			# For large read, Metasm may cache and return WindowsRemoteString
+			mem = @dbg.memory[addr.to_i, len.to_i]
+			mem = mem.realstring() unless mem.is_a?(String)
+			
+			mem
 		end
 		
 		def write_memory(addr, data)
 			@dbg.memory[addr, data.size] = data
+		end
+		
+		# This is required because usual memory read may be cached
+		# len should be page aligned
+		def read_process_memory(addr, len)
+			buffer = [0].pack('C') * len
+			return nil if ::Metasm::WinAPI.readprocessmemory(@process.handle, addr, buffer, len, 0) == 0
+			buffer
 		end
 		
 		def minidump(path)
@@ -158,6 +174,10 @@ module RbWinDBG
 			prot ||= Metasm::WinAPI::PAGE_EXECUTE_READWRITE
 			
 			Metasm::WinAPI.virtualallocex(@process.handle, loc, size.to_i, alloc_type, prot)
+		end
+		
+		def virtual_free(addr, size = 0, free_type = ::Metasm::WinAPI::MEM_RELEASE)
+			Metasm::WinAPI.virtualfreeex(@process.handle, addr, size, free_type)
 		end
 		
 		def execute_code(code)
@@ -197,7 +217,10 @@ module RbWinDBG
 		end
 		
 		def get_thread_context(tid)
-			self.get_thread(tid).context()
+			ctx = self.get_thread(tid).context()
+			ctx.update()	# This actually executes the GetThreadContext
+			
+			ctx
 		end
 		
 		def set_thread_context(tid, context)
@@ -234,8 +257,12 @@ module RbWinDBG
 			end
 		end
 		
+		def list_modules
+			::Metasm::WinOS.list_modules(@process.pid)
+		end
+		
 		def get_module(dll_name)
-			@process.modules.each do |mod|
+			self.list_modules.each do |mod|
 				next if mod.path.to_s.empty?
 				
 				return mod if File.basename(mod.path).downcase == dll_name.to_s.downcase

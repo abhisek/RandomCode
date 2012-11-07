@@ -5,21 +5,23 @@ module RbWinDBG
 			@dbg = dbg
 		end
 		
-		def read_wstring(addr)
+		def read_wstring(addr, max_chars = 4096)
 			i = 0
 			loop do
 				break if @dbg.memory[addr + i, 2].unpack('v').first() == 0
 				i += 2
+				break if ((i / 2) > max_chars)
 			end
 			
 			@dbg.memory[addr, i].gsub("\x00", "")
 		end
 		
-		def read_string(addr)
+		def read_string(addr, max_chars = 4096)
 			i = 0
 			loop do
 				break if @dbg.memory[addr + i, 1].unpack('C').first() == 0
 				i += 1
+				break if i > max_chars
 			end
 			
 			@dbg.memory[addr, i]

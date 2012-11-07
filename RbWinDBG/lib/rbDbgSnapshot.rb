@@ -3,9 +3,7 @@ module RbWinDBG
 	#
 	# Snapshot Target Process threads and Memory Blocks
 	# 	Uses PyDBG algorithm (as described by Pedram Amini in his Fuzzing book)
-	#
-	$rbWinDbgSnapshotDebug = false
-	
+	#	
 	class Win32ProcessSnapshot
 		
 		attr_reader :snapshot_info
@@ -57,7 +55,7 @@ module RbWinDBG
 			@thread_snapshot = {}
 			
 			@dbg.threads.each do |tid|
-				puts "Saving Context for TID: #{tid}" if $rbWinDbgSnapshotDebug
+				_snp_dbg("Saving Context for TID: #{tid}")
 				
 				@thread_snapshot[tid] = @dbg.get_thread_context(tid)
 			end
@@ -68,7 +66,7 @@ module RbWinDBG
 		def restore_threads()
 			# We restore active threads only.
 			@dbg.threads.each do |tid|
-				puts "Restoring Context for TID: #{tid}" unless @thread_snapshot[tid].nil? or (!$rbWinDbgSnapshotDebug)
+				_snp_dbg("Restoring Context for TID: #{tid}") unless @thread_snapshot[tid].nil?
 				
 				@dbg.set_thread_context(tid, @thread_snapshot[tid]) unless @thread_snapshot[tid].nil?
 			end
@@ -94,12 +92,13 @@ module RbWinDBG
 				cursor += mbi.regionsize
 				
 				next unless (mbi.state & ::Metasm::WinAPI::MEM_COMMIT) > 0
+				next if (mbi.type == ::Metasm::WinAPI::MEM_IMAGE)
 				next if protection_filters.collect {|e| e if ((mbi.protect & e) > 0)}.compact.size() > 0
 				
-				puts "Saving Memory Block - BaseAddr: 0x%08x Size: 0x%08x" % 
-					[mbi.baseaddress, mbi.regionsize] if $rbWinDbgSnapshotDebug
+				_snp_dbg("Saving Memory Block - BaseAddr: 0x%08x Size: 0x%08x" % 
+					[mbi.baseaddress, mbi.regionsize])
 				
-				mem_data = @dbg.read_memory(mbi.baseaddress, mbi.regionsize)
+				mem_data = @dbg.read_process_memory(mbi.baseaddress, mbi.regionsize)
 				raise "Data Inconsistency in Snapshot" if mem_data.size != mbi.regionsize
 				
 				@memory_snapshot << [mbi, mem_data]
@@ -114,8 +113,10 @@ module RbWinDBG
 				mbi = ms[0]
 				mem_data = ms[1]
 				
-				puts "Restoring Memory Block - BaseAddr: 0x%08x Size: 0x%08x" % 
-					[mbi.baseaddress, mbi.regionsize] if $rbWinDbgSnapshotDebug
+				raise "Data Inconsistency in Snapshot Restore" if mem_data.size != mbi.regionsize
+				
+				_snp_dbg("Restoring Memory Block - BaseAddr: 0x%08x Size: 0x%08x" % 
+					[mbi.baseaddress, mbi.regionsize])
 				
 				@dbg.write_memory(mbi.baseaddress, mem_data)
 			end
@@ -131,6 +132,10 @@ module RbWinDBG
 			@dbg.threads.each do |tid|
 				@dbg.get_thread(tid).resume()
 			end
+		end
+		
+		def _snp_dbg(msg)
+			#$stderr.puts("[SNAPSHOT DEBUG]: " + msg)
 		end
 	end
 

@@ -34,13 +34,13 @@ if __FILE__ == $0
 			
 			if pre_snapshot_data != post_snapshot_data
 				puts "DATA DOES NOT MATCH!"
-				puts "----- PRE ----"
+				puts "----- PRE -----"
 				puts pre_snapshot_data.inspect
-				puts "--------------"
+				puts "---------------"
 				puts "----- POST ----"
 				puts post_snapshot_data.inspect
-				puts "----------------"
-				#exit
+				puts "---------------"
+				exit
 			end
 		end
 		
