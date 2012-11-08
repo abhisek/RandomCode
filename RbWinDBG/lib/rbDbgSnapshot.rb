@@ -118,7 +118,7 @@ module RbWinDBG
 				_snp_dbg("Restoring Memory Block - BaseAddr: 0x%08x Size: 0x%08x" % 
 					[mbi.baseaddress, mbi.regionsize])
 				
-				@dbg.write_memory(mbi.baseaddress, mem_data)
+				@dbg.write_process_memory(mbi.baseaddress, mem_data)
 			end
 		end
 		

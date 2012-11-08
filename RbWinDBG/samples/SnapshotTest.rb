@@ -6,14 +6,16 @@ if __FILE__ == $0
 	puts "Process Handle: 0x%08x" % [dbg.process.handle]
 	puts "EP: 0x%08x" % [dbg.entrypoint]
 	
+	cf_count = 0
+	cf_count_r = 5
+	
 	dbg.on_entrypoint do
 		puts "Entrypoint Hit - Taking Snapshot"
 		
-		pre_snapshot_data = {
-			:esp => dbg.get_reg_value(:esp),
-			:eip => dbg.get_reg_value(:eip),
-			:esp_data => dbg.memory[dbg.get_reg_value(:esp) - 32, 64]
-		}
+		mem_addr = dbg.get_reg_value(:esp) - 512
+		mem_size = 4096
+		
+		pre_mem_data = dbg.read_process_memory(mem_addr, mem_size)
 		
 		s = dbg.snapshot_process()
 		
@@ -23,23 +25,27 @@ if __FILE__ == $0
 		puts "Snapshot Memory Data Count:  #{s.snapshot_info[:memory_store_count]}"
 		
 		dbg.bpx(dbg.resolve_name("kernel32.dll!CreateFileW")) do
-			puts "CreateFileW Hit! - Restoring Snapshot"
-			dbg.snapshot_restore_process
-			
-			post_snapshot_data = {
-				:esp => dbg.get_reg_value(:esp),
-				:eip => dbg.get_reg_value(:eip),
-				:esp_data => dbg.memory[dbg.get_reg_value(:esp) - 32, 64]
-			}
-			
-			if pre_snapshot_data != post_snapshot_data
-				puts "DATA DOES NOT MATCH!"
-				puts "----- PRE -----"
-				puts pre_snapshot_data.inspect
-				puts "---------------"
-				puts "----- POST ----"
-				puts post_snapshot_data.inspect
-				puts "---------------"
+			if cf_count < cf_count_r
+				cf_count += 1
+			else
+				puts "CreateFileW Hit! - Restoring Snapshot"
+				
+				post_mem_data = dbg.read_process_memory(mem_addr, mem_size)
+				if pre_mem_data != post_mem_data
+					puts "BEFORE: MEMORY DATA DOESN'T MATCH"
+				else
+					puts "BEFORE: MEMORY DATA MATCHES"
+				end
+				
+				dbg.snapshot_restore_process
+				
+				post_mem_data = dbg.read_process_memory(mem_addr, mem_size)
+				if pre_mem_data != post_mem_data
+					puts "AFTER: MEMORY DATA DOESN'T MATCH"
+				else
+					puts "AFTER: MEMORY DATA MATCHES"
+				end
+				
 				exit
 			end
 		end

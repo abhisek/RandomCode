@@ -140,6 +140,13 @@ module RbWinDBG
 			@dbg.memory
 		end
 		
+		# Clears Metasm Page Cache
+		def memory_invalidate_cache
+			@dbg.memory.invalidate
+		end
+		
+		# Returns VirtualString if len > 4096 instead of plain Ruby string
+		# Metasm implements PageCache around it
 		def read_memory_cached(add, len)
 			@dbg.memory[addr.to_i, len.to_i]
 		end
@@ -162,6 +169,10 @@ module RbWinDBG
 			buffer = [0].pack('C') * len
 			return nil if ::Metasm::WinAPI.readprocessmemory(@process.handle, addr, buffer, len, 0) == 0
 			buffer
+		end
+		
+		def write_process_memory(addr, data)
+			::Metasm::WinAPI.writeprocessmemory(@process.handle, addr, data, data.size, nil)
 		end
 		
 		def minidump(path)
@@ -221,6 +232,18 @@ module RbWinDBG
 			ctx.update()	# This actually executes the GetThreadContext
 			
 			ctx
+		end
+		
+		def suspend_all_threads
+			self.threads.each do |tid|
+				self.get_thread(tid).suspend()
+			end
+		end
+		
+		def resume_all_threads
+			self.threads.each do |tid|
+				self.get_thread(tid).resume()
+			end
 		end
 		
 		def set_thread_context(tid, context)
