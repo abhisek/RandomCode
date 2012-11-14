@@ -103,9 +103,13 @@ module RbWinDBG
 			end
 		end
 		
+		def process_image_base
+			# FIXME: Win64
+			@dbg.memory[@process.peb_base + 8, 4].unpack('V').first()
+		end
+		
 		def entrypoint
-			# TODO: Fetch Image Base from PEB
-			@pe.optheader.image_base + @pe.optheader.entrypoint
+			self.process_image_base + @pe.optheader.entrypoint
 		end
 		
 		def qbpx(name, one_time = false, &block)
@@ -200,6 +204,7 @@ module RbWinDBG
 		end
 
 		def get_stack_arg(n)
+			# FIXME: Win64
 			self.utils.ptr_at(self.get_reg_value(:esp) + (n * 4))
 		end
 		
@@ -248,6 +253,7 @@ module RbWinDBG
 		
 		def set_thread_context(tid, context)
 			# FAILS! for WOW64
+			# FIXME: Win64
 			::Metasm::WinAPI.setthreadcontext(self.get_thread_handle(tid), context)
 		end
 		

@@ -84,6 +84,7 @@ module RbWinDBG
 			addrsz = @dbg.process.addrsz
 			cursor = 0
 			
+			# FIXME: Win64
 			while cursor < 0xFFFFFFFF
 				mbi = ::Metasm::WinAPI.alloc_c_struct("MEMORY_BASIC_INFORMATION#{addrsz}")
 				ret = ::Metasm::WinAPI.virtualqueryex(@dbg.process.handle, cursor, mbi, mbi.sizeof)
