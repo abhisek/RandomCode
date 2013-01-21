@@ -3,7 +3,7 @@ RbWinDBG
 
 *Win32 scriptable debugger in Ruby using Metasm API.*
 
-RbWinDBG is developed and tested on Win32 platform only. Although most of the code should work in Win64 platform as well, there are cases which WILL NOT work on a Win64 platform.
+RbWinDBG is developed and tested on Win32 platform only. Although most of the code should work for Win64 platform as well, there are cases which WILL NOT work on a Win64 platform.
 
 Requirements
 ------------
