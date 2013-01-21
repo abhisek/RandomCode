@@ -66,9 +66,13 @@ The Debugger object provides multiple callbacks using which an user script can h
 
 ### Debugger API
 
-The debugger object provides various utility functions for introspecting the debuggee:
+The debugger object provides various utility functions for introspecting the debugee:
 
-* **resolve_name('dll_name!func_name')**: Returns address of the function. 
+* **resolve_name('dll_name!func_name')**: Returns address of the function.
+* **read_memory(addr, size)**: Read _size_ bytes of data from address _addr_ in debugee address space. (Page Cached by Metasm)
+* **write_memory(addr, data)**: Write _data_ at address _addr_ in debugee address space.
+* **get_reg_value(reg)**: Get the value of the register identified by string/symbol _reg_.
+* **set_reg_value(reg)**: Set the value of the register identified by string/symbol _reg_.
 
 ### Breakpoints
 
