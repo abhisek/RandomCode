@@ -21,8 +21,10 @@ if __FILE__ == $0
 	# Create Debugger Object (optionally can be attached as well)
 	dbg = RbWinDBG.start("C:\\Windows\\System32\\notepad.exe")
 	
-	# Execute till entrypoint and set breakpoints
+	# Execute till entrypoint and set breakpoints (EP callback)
 	dbg.on_entrypoint do
+	
+		# Set breakpoint (BP callback)
 		dbg.bpx(dbg.resolve_name('kernel32.dll!CreateFileW')) do
 			puts("CreateFileW !!")
 		end
@@ -32,6 +34,8 @@ if __FILE__ == $0
 	dbg.start()
 end
 ```
+
+RbWinDBG internally maintains a map of dynamically loaded modules (DLL) and their exported function names and corresponding address in memory. In order to resolve the address of a function by name, it is imperative that the library is already loaded and processed by RbWinDBG. Due to this reason we set the breakpoint in the above example after entrypoint is hit.
 
 Common Usage
 -----------
