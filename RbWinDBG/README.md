@@ -8,7 +8,10 @@ RbWinDBG is developed and tested on Win32 platform only. Although most of the co
 Requirements
 ------------
 
-Metasm library needs to be in: C:\Lib\metasm
+Metasm library needs to be in: C:\Lib\metasm or
+```
+gem install metasm
+```
 
 Introduction
 ------------
