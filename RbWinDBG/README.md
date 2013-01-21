@@ -61,11 +61,16 @@ The Debugger object provides multiple callbacks using which an user script can h
 
 * **on_entrypoint**: Called when debugee hits entrypoint address as obtained from PE Header.
 * **on_library_load**: Called when a DLL is loaded using LoadLibrary(..) API. The path of the loaded library is passed to the handler.
-
+* **on_thread_start**: Called when a new thread is created by the debugged process. Metasm::WinOS::Thread object is passed to the callback.
+* **on_thread_exit**: Called when a thread exits. Metasm::WinOS::Thread object is passed to the callback.
 
 ### Debugger API
 
+The debugger object provides various utility functions for introspecting the debuggee:
 
+* **resolve_name('dll_name!func_name')**: Returns address of the function. 
+
+### Breakpoints
 
 
 Common Usage
