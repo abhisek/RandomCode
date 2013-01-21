@@ -8,10 +8,35 @@ Requirements
 
 Metasm library needs to be in: C:\Lib\metasm
 
-Basic Usage
+Introduction
+------------
+
+```ruby
+require 'RbWinDBG'
+
+if __FILE__ == $0
+	# Platform specific initialization
+	RbWinDBG.init()
+	
+	# Create Debugger Object (optionally can be attached as well)
+	dbg = RbWinDBG.start("C:\\Windows\\System32\\notepad.exe")
+	
+	# Execute till entrypoint and set breakpoints
+	dbg.on_entrypoint do
+		dbg.bpx(dbg.resolve_name('kernel32.dll!CreateFileW')) do
+			puts("CreateFileW !!")
+		end
+	end
+	
+	# Start debugger loop
+	dbg.start()
+end
+```
+
+Common Usage
 -----------
 
-``
+```ruby
 require 'RbWinDBG'
 
 if __FILE__ == $0
@@ -56,4 +81,4 @@ if __FILE__ == $0
 		
 	dbg.start
 end
-``
+```
