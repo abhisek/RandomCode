@@ -3,15 +3,84 @@ RbWinDBG
 
 *Win32 scriptable debugger in Ruby using Metasm API.*
 
+RbWinDBG is developed and tested on Win32 platform only. Although most of the code should work for Win64 platform as well, there are cases which WILL NOT work on a Win64 platform.
+
 Requirements
 ------------
 
-Metasm library needs to be in: C:\Lib\metasm
+Metasm library needs to be in: C:\Lib\metasm or
+```
+gem install metasm
+```
 
-Basic Usage
+Introduction
+------------
+
+```ruby
+require 'RbWinDBG'
+
+if __FILE__ == $0
+	# Platform specific initialization
+	RbWinDBG.init()
+	
+	# Create Debugger Object (optionally can be attached as well)
+	dbg = RbWinDBG.start("C:\\Windows\\System32\\notepad.exe")
+	
+	# Execute till entrypoint and set breakpoints (EP callback)
+	dbg.on_entrypoint do
+	
+		# Set breakpoint (BP callback)
+		dbg.bpx(dbg.resolve_name('kernel32.dll!CreateFileW')) do
+			puts("CreateFileW !!")
+		end
+	end
+	
+	# Start debugger loop
+	dbg.start()
+end
+```
+
+RbWinDBG internally maintains a map of dynamically loaded modules (DLL) and their exported function names and corresponding address in memory. In order to resolve the address of a function by name, it is imperative that the library is already loaded and processed by RbWinDBG. Due to this reason we set the breakpoint in the above example after entrypoint is hit.
+
+API
+----
+
+The Debugger object can be obtained in one of the following ways:
+
+```
+dbg = RbWinDBG.start("C:\\target.exe")
+```
+or
+```
+dbg = RbWinDBG.attach(1234)
+```
+
+### Debugger Callbacks
+
+The Debugger object provides multiple callbacks using which an user script can handle multiple debugging events. A Ruby code-block is to be supplied as handler for the corresponding event. The code-block will be called with optional parameters depending on the type:
+
+* **on_entrypoint**: Called when debugee hits entrypoint address as obtained from PE Header.
+* **on_library_load**: Called when a DLL is loaded using LoadLibrary(..) API. The path of the loaded library is passed to the handler.
+* **on_thread_start**: Called when a new thread is created by the debugged process. Metasm::WinOS::Thread object is passed to the callback.
+* **on_thread_exit**: Called when a thread exits. Metasm::WinOS::Thread object is passed to the callback.
+
+### Debugger API
+
+The debugger object provides various utility functions for introspecting the debugee:
+
+* **resolve_name('dll_name!func_name')**: Returns address of the function.
+* **read_memory(addr, size)**: Read _size_ bytes of data from address _addr_ in debugee address space. (Page Cached by Metasm)
+* **write_memory(addr, data)**: Write _data_ at address _addr_ in debugee address space.
+* **get_reg_value(reg)**: Get the value of the register identified by string/symbol _reg_.
+* **set_reg_value(reg)**: Set the value of the register identified by string/symbol _reg_.
+
+### Breakpoints
+
+
+Common Usage
 -----------
 
-``
+```ruby
 require 'RbWinDBG'
 
 if __FILE__ == $0
@@ -56,4 +125,4 @@ if __FILE__ == $0
 		
 	dbg.start
 end
-``
+```
