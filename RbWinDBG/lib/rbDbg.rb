@@ -364,9 +364,9 @@ module RbWinDBG
 		sdbg
 	end
 	
-	def self.start(path)
+	def self.start(path, params=[])
 		pe = Metasm::PE.decode_file(path)
-		process = Metasm::WinOS.create_process(path)
+		process = Metasm::WinOS.create_process(path + " " + params.join(" "))
 		dbg = process.debugger()
 		
 		SimpleWrapper.new(dbg, pe, process)
