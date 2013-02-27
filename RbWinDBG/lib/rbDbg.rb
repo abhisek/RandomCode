@@ -366,7 +366,11 @@ module RbWinDBG
 	
 	def self.start(path, params=[])
 		pe = Metasm::PE.decode_file(path)
-		process = Metasm::WinOS.create_process(path + " " + params.join(" "))
+		
+		cmdline = path
+		cmdline += params.join(' ') unless params.empty?
+		
+		process = Metasm::WinOS.create_process(cmdline)
 		dbg = process.debugger()
 		
 		SimpleWrapper.new(dbg, pe, process)
