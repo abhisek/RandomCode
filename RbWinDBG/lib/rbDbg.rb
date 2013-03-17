@@ -294,10 +294,20 @@ module RbWinDBG
 			self.list_modules.each do |mod|
 				next if mod.path.to_s.empty?
 				
-				return mod if File.basename(mod.path).downcase == dll_name.to_s.downcase
+				return mod if File.basename(mod.path).downcase == File.basename(dll_name.to_s).downcase
 			end
 			
 			nil
+		end
+		
+		def get_module_pe(mod)
+			mod = self.get_module(mod) if mod.is_a?(String)
+			
+			mod_pe = Metasm::LoadedPE.load(@dbg.memory[mod.addr, mod.size])
+			mod_pe.decode_header
+			mod_pe.decode_exports
+			
+			mod_pe
 		end
 		
 		def update_module_map!

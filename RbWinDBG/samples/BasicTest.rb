@@ -1,7 +1,7 @@
 require 'RbWinDBG'
 
 if __FILE__ == $0
-	dbg = RbWinDBG.start("C:\\Windows\\System32\\notepad.exe")
+	dbg = RbWinDBG.start(ARGV[0] || "C:\\Windows\\System32\\calc.exe")
 	
 	puts "Process Handle: 0x%08x" % [dbg.process.handle]
 	puts "EP: 0x%08x" % [dbg.entrypoint]
