@@ -136,6 +136,11 @@ module RbWinDBG
 			@dbg.hwbp(addr, :w, mLen, nil) { block.call } unless addr.nil?
 		end
 		
+		# Continue execution till addr
+		def go(addr, &block)
+			# TODO
+		end
+		
 		def stack_trace(depth = 500)
 			@dbg.stacktrace(depth)
 		end

@@ -1,7 +1,7 @@
 require 'RbWinDBG'
 
 if __FILE__ == $0
-	dbg = RbWinDBG.start(ARGV[0] || "C:\\Windows\\System32\\calc.exe")
+	dbg = RbWinDBG.start(ARGV[0] || "C:\\Windows\\System32\\Notepad.exe")
 	
 	puts "Process Handle: 0x%08x" % [dbg.process.handle]
 	puts "EP: 0x%08x" % [dbg.entrypoint]
@@ -52,7 +52,13 @@ Exeption: {:type=>"access violation", :st=>struct _EXCEPTION_RECORD x = {
 };, :firstchance=>1, :fault_addr=>4, :fault_access=>:r}
 =end
 		dbg.on_exception do |ei|
-			puts "Process Exception: #{ei[:type]}"
+			#puts ei.inspect
+			puts "Process Exception: #{ei[:type]} (%s) (fault: 0x%08x access: %s)" % 
+				[RbWinDBG::NTSTATUS.code_name(ei[:st].ExceptionCode), ei[:fault_addr] || 0, ei[:fault_access] || ""]
+			$expt ||= 0
+			$expt += 1
+			
+			exit if $expt > 10
 		end
 		
 =begin

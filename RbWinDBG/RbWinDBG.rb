@@ -6,6 +6,7 @@ require 'rbDbg'
 require 'rbDbgUtils'
 require 'rbDbgSnapshot'
 require 'rbMiniDump'
+require 'ntstatus'
 
 $VERBOSE = false
 $DEBUG = false
