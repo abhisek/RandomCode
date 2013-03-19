@@ -39,6 +39,7 @@ module RbWinDBG
 			end
 		end
 		
+		# This sucks - Windows will send LoadLibrary debug event anyway
 		def on_library_load(&block)
 			self.bpx(self.resolve_name('kernel32.dll!LoadLibraryW')) do
 				ret = self.utils.ptr_at(self.get_reg_value(:esp))
