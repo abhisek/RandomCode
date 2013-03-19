@@ -101,7 +101,7 @@ module RbWinDBG
 		
 		def resolve_lib_path(libname)
 			@modules_map.keys.find do |s| 
-				(File.basename(s).downcase == libname.downcase)
+				(File.basename(s).downcase == libname.downcase) or (File.basename(s).split('.')[0].to_s == libname.downcase)
 			end
 		end
 		
@@ -210,9 +210,17 @@ module RbWinDBG
 			@dbg.ctx
 		end
 
+		# Correct only during function entry
 		def get_stack_arg(n)
 			# FIXME: Win64
 			self.utils.ptr_at(self.get_reg_value(:esp) + (n * 4))
+		end
+		
+		# Correct only during function entry
+		# n = 0 ... n
+		def func_param(n)
+			# FIXME: Win64
+			self.utils.ptr_at(self.get_reg_value(:esp) + ((n + 1) * 4))
 		end
 		
 		def registers

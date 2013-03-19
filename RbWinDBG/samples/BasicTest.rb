@@ -14,11 +14,16 @@ if __FILE__ == $0
 		
 		puts "CreateFileW: 0x%08x" % dbg.resolve_name('kernel32.dll!CreateFileW')
 		puts "GetMessageA: 0x%08x" % dbg.resolve_name('user32.dll!GetMessageA')
+		puts "VirtualProtectEx: 0x%08x" % dbg.resolve_name('kernel32!VirtualProtectEx')
+		
+		#$stdin.gets
 		
 		puts "VirtualAlloc(0x60): 0x%08x" % [dbg.virtual_alloc(0x60)]
 		
 		dbg.bpx(dbg.resolve_name('kernel32.dll!CreateFileW')) do
-			puts 'CreateFileW: %s' % [dbg.utils.read_wstring(dbg.utils.ptr_at(dbg.get_reg_value(:esp) + 4))]
+			#puts 'CreateFileW: %s' % [dbg.utils.read_wstring(dbg.utils.ptr_at(dbg.get_reg_value(:esp) + 4))]
+			#puts 'CreateFileW: %s' % [dbg.utils.read_wstring(dbg.get_stack_arg(1)]
+			puts 'CreateFileW: %s' % [dbg.utils.read_wstring(dbg.func_param(0))]
 		end	
 		
 		dbg.on_library_load do |lib|
@@ -55,12 +60,9 @@ Exeption: {:type=>"access violation", :st=>struct _EXCEPTION_RECORD x = {
 			#puts ei.inspect
 			puts "Process Exception: #{ei[:type]} (%s) (fault: 0x%08x access: %s)" % 
 				[RbWinDBG::NTSTATUS.code_name(ei[:st].ExceptionCode), ei[:fault_addr] || 0, ei[:fault_access] || ""]
+				
 			$expt ||= 0
 			$expt += 1
-			
-			if ei[:st].ExceptionCode == 0x6ba
-				dbg.dbg.continue()
-			end
 			
 			exit if $expt > 10
 		end
