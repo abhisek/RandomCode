@@ -53,6 +53,7 @@ module RbWinDBG
 		def on_exception(&block)
 			@dbg.callback_exception = proc do |h|
 				block.call(h) if h[:type].to_s !~ /breakpoint/i
+				@dbg.pass_current_exception() if h[:type].to_s !~ /access violation/i
 			end
 		end
 		

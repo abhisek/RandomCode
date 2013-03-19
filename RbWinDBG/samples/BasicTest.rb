@@ -58,6 +58,10 @@ Exeption: {:type=>"access violation", :st=>struct _EXCEPTION_RECORD x = {
 			$expt ||= 0
 			$expt += 1
 			
+			if ei[:st].ExceptionCode == 0x6ba
+				dbg.dbg.continue()
+			end
+			
 			exit if $expt > 10
 		end
 		
