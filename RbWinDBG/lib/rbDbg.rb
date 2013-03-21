@@ -21,6 +21,10 @@ module RbWinDBG
 				end
 			end
 			
+			on_exception do
+				# Default handler - ensures non-access violation exceptions are passed to debugee
+			end
+			
 			@dbg.set_log_proc(nil) do
 				# Ignore Logs from Metasm
 			end unless $rbWinDbgConfig[:metasm_debug]
