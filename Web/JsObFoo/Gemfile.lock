@@ -1,0 +1,12 @@
+GEM
+  remote: http://www.rubygems.org/
+  specs:
+    colorize (0.5.8)
+    rkelly (1.0.7)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  colorize
+  rkelly
