@@ -43,7 +43,17 @@ module JsObFoo
       msg_info("Running modules")
       @mm.run_modules(ast)
 
-      puts ast.to_ecma
+      final_source = ast.to_ecma
+      final_source = js_compress(final_source) if @config.compress?
+
+      puts final_source
+    end
+
+    def js_compress(js_str)
+      msg_info("Compressing Javascript source")
+
+      u = ::Uglifier.new({:mangle => false})
+      u.compile(js_str)
     end
   end
 

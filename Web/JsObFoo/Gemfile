@@ -2,4 +2,5 @@ source 'http://www.rubygems.org'
 
 gem 'rkelly'
 gem 'colorize'
+gem 'uglifier'
 

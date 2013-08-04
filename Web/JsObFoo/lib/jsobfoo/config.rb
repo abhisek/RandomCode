@@ -9,7 +9,8 @@ module JsObFoo
         :ouptput_file => nil,
         :verbose => false,
         :obfoo_min_var_size => 10,
-        :obfoo_max_var_size => 30
+        :obfoo_max_var_size => 30,
+        :compress => false
       }
     end
 
@@ -19,6 +20,10 @@ module JsObFoo
 
     def verbose?
       !!@config[:verbose]
+    end
+
+    def compress?
+      !!@config[:compress]
     end
 
     def parse!
@@ -31,6 +36,10 @@ module JsObFoo
 
         opts.on("-o", "--output [FILE]", "File to write obfuscated Javascript source") do |file|
           @config[:output_file] = file.to_s
+        end
+
+        opts.on("-z", "--compress", "Compress generated Javascript source") do
+          @config[:compress] = true
         end
 
         opts.on("-v", "--verbose", "Show verbose messages") do
