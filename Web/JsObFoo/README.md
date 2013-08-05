@@ -1,7 +1,7 @@
 # Javascript Obfuscation Tool
 
 
-The idea for developing this tool came during [@prasannain](http://www.twitter.com/prasannain) session on Javascript obfuscation during [JSFoo Hacknight](https://hacknight.in/jsfoo/offense-and-defense-security-in-javascript) on Javascript security co-ornigzed by [HasGeek](https://hasgeek.com/) and [Null](http://null.co.in/).
+The idea for developing this tool came during [@prasannain](http://www.twitter.com/prasannain) session on Javascript obfuscation during [JSFoo Hacknight](https://hacknight.in/jsfoo/offense-and-defense-security-in-javascript) on Javascript security co-organized by [HasGeek](https://hasgeek.com/) and [Null](http://null.co.in/).
 
 This is a Proof of Concept implementation of some of the techniques discussed as a part of Javascript obfuscation session at the Hacknight, particularly:
 
@@ -82,3 +82,11 @@ alert(i);
 alert(func1());
 alert(func2());
 ```
+
+# Roadmap
+
+* Implement/Use the esoteric [JSFuck](http://www.jsfuck.com) for string obfuscation :P
+* Full script encoder (Encode with XOR or some other algorithm and eval at runtime with an obfuscated loader)
+* Encoder with environment derived key (e.g key derived from user-agent?)
+* Transparent browser detection (e.g --no-chrome: Do not run JS on Chrome)
+* Contextual Transformation (e.g Fake Calls)
