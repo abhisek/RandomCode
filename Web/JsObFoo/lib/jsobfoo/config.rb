@@ -18,6 +18,10 @@ module JsObFoo
       @config[:input_file]
     end
 
+    def output_file
+      @config[:output_file]
+    end
+
     def verbose?
       !!@config[:verbose]
     end
@@ -30,11 +34,11 @@ module JsObFoo
       opt_p = OptionParser.new do |opts|
         opts.banner = "Usage: #{$0} [options]"
 
-        opts.on("-i", "--input [FILE]", "Javascript source file to obfuscate") do |file|
+        opts.on("-i", "--input [FILE]", "Javascript source file to obfuscate (Required)") do |file|
           @config[:input_file] = file.to_s
         end
 
-        opts.on("-o", "--output [FILE]", "File to write obfuscated Javascript source") do |file|
+        opts.on("-o", "--output [FILE]", "File to write obfuscated Javascript source (Required)") do |file|
           @config[:output_file] = file.to_s
         end
 
@@ -52,12 +56,12 @@ module JsObFoo
         end
       end
 
-      if ARGV.size.zero?
+      opt_p.parse!(ARGV)
+
+      if @config[:input_file].nil? or @config[:output_file].nil?
         puts opt_p
         exit(1)
       end
-
-      opt_p.parse!(ARGV)
     end
   end
 

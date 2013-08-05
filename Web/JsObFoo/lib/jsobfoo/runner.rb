@@ -46,7 +46,8 @@ module JsObFoo
       final_source = ast.to_ecma
       final_source = js_compress(final_source) if @config.compress?
 
-      puts final_source
+      #puts final_source
+      write_source(final_source)
     end
 
     def js_compress(js_str)
@@ -54,6 +55,15 @@ module JsObFoo
 
       u = ::Uglifier.new({:mangle => false})
       u.compile(js_str)
+    end
+
+    def write_source(js)
+      msg_info("Writing processed source: #{@config.output_file}")
+      
+      File.open(@config.output_file, "w") do |fd|
+        fd.write(js)
+        fd.close
+      end
     end
   end
 
