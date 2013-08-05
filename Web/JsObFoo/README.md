@@ -27,7 +27,7 @@ Usage: jsobfoo.rb [options]
 
 ## Example
 ```
-bash-3.2$ ruby jsobfoo.rb -i test/samples/simple.js
+bash-3.2$ ruby jsobfoo.rb -i test/samples/simple.js -o obfoo.js
 ```
 
 ### Generates
