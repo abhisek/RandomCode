@@ -45,6 +45,11 @@ module JsObFoo
         opts.on("-v", "--verbose", "Show verbose messages") do
           @config[:verbose] = true
         end
+
+        opts.on("-C", "--console", "Start IRB console") do
+          IRB.start(__FILE__)
+          exit(1)
+        end
       end
 
       if ARGV.size.zero?

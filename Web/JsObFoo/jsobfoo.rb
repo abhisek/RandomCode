@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'bundler'
+require 'irb'
 
 require File.join(File.dirname(__FILE__), 'lib', 'jsobfoo')
 Bundler.require(:default)

@@ -6,4 +6,5 @@ require 'jsobfoo/module_manager'
 require 'jsobfoo/runner'
 require 'jsobfoo/utils'
 require 'jsobfoo/quirks'
+require 'jsobfoo/jsfuck'
 
