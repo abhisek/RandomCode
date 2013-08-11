@@ -20,6 +20,7 @@ module JsObFoo
       require_module('string_obfuscator')
     end
 
+    # TODO: Enumerate on per function scope
     def run_modules(ast)
       ast.each do |node|
         #puts "#{node.class}: #{node.value.class}"

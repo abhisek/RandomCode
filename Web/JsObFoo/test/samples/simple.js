@@ -16,7 +16,7 @@ function func2() {
 }
 
 for(i = 22; i < 44; i += 4) {
-  alert("Hello World");
+  //alert("Hello World");
 }
 
 i += 2;

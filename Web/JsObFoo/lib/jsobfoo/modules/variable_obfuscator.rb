@@ -12,17 +12,27 @@ module JsObFoo
       @mm.msg_verbose("Running module: #{self.class.to_s} on #{node.class}")
 
       if node.is_a?(::RKelly::Nodes::FunctionDeclNode)
+        #@mm.msg_verbose("Transforming function declaration: #{node.value}")
+
         @fun_map[node.value] ||= ::JsObFoo::Utils.random_js_variable(10)
         node.value = @fun_map[node.value]
       elsif node.is_a?(::RKelly::Nodes::FunctionCallNode)
+        #@mm.msg_verbose("Transforming function call: #{node.value.value}")
+
         name = node.value.value   # node.value -> ResolveNode
         # Ensure we mangle locally defined function names only
         if @fun_map[name]
           node.value.value = @fun_map[name]
+        else
+          node.value.value = ::JsObFoo::Quirks.evalify(name)
         end
       elsif node.is_a?(::RKelly::Nodes::ResolveNode)
+        #@mm.msg_verbose("Transforming variable reference: #{node.value}")
+
         node.value = @var_map[node.value] unless @var_map[node.value].nil?
-      else
+      elsif node.is_a?(::RKelly::Nodes::VarDeclNode)
+        #@mm.msg_verbose("Transforming variable declaration: #{node.name}")
+
         orig_name = node.name
         orig_sig  = orig_name
 
