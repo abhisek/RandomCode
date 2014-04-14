@@ -1,0 +1,54 @@
+addr of g_note_count var = 0x0804A04C
+addr of g_notes_buf = 0x0804A060
+
+add_note: 0x08048794
+change_note: 0x08048893 
+remove_note: 0x0804881A
+
+break *0x08048794
+commands
+	printf "chunk_alloc\n"
+	cont
+end
+
+break *0x08048893
+commands
+	printf "chunk_write\n"
+	cont
+end
+
+break *0x0804881A
+commands
+	printf "chunk_free\n"
+	cont
+end
+
+
+g_notes_buf = [ptr1][ptr2][...][ptrN]
+ptrN = memory written using change_note, data fully controlled
+
+
+custom heap like data structure implementation:
+
+* g_notes_buf points to bucket of memory pointers
+* each mem_ptr consists of 12 bytes meta-info prepended:
+	[size][ptr1][ptr2][      data     ]
+
+
+
+
+1. add_note				-> allocate memory
+2. change_note		-> write memory allocated at (1) (with overflow)
+3. print_note			-> display data written at (2)
+
+
+Exploit:
+
+* Alloc chunk1
+* Alloc chunk2
+* Overflow chunk1
+* Free chunk2 (get aa4bmo here)
+
+
+
+
