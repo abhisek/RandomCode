@@ -1,0 +1,46 @@
+* Read key from json
+* Read array of "addrs" from json
+* Attempt mmap'ing memory at each addr from array till success
+* Copy "pppp: key" to mmap'd memory
+* init seccomp sandbox
+* read exec shellcode
+
+.text:08048B7C                 call    _json_load_file
+break *0x08048B7C
+
+.text:08048CD8                 call    _mmap
+break *0x08048CD8
+
+
+int seccomp_rule_add(scmp_filter_ctx ctx, uint32_t action,
+                       int syscall, unsigned int arg_cnt, ...);
+
+
+seccomp allowed sys calls:
+	3, 4, 6, 0x21, 0x14a, 0x6c, 0xfc
+					 33,   330, 108, 252
+
+http://publicclu2.blogspot.in/2013/05/32-bit-linux-system-call-signal-errno.html
+
+sys_read
+sys_write
+sys_close
+sys_access
+sys_dup3
+sys_fstat
+sys_exit_group
+
+
+.text:08048CC7                 push    esi
+.text:08048CC8                 push    esi
+.text:08048CC9                 push    0               ; offset
+.text:08048CCB                 push    0FFFFFFFFh      ; fd
+.text:08048CCD                 push    22h             ; flags
+.text:08048CCF                 push    3               ; prot
+.text:08048CD1                 push    [ebp+len]       ; len
+.text:08048CD7                 push    eax             ; addr
+.text:08048CD8                 call    _mmap
+M
+M
+
+
