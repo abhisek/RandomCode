@@ -52,8 +52,10 @@ module RbWinDBG
 		
 		def on_exception(&block)
 			@dbg.callback_exception = proc do |h|
-				block.call(h) if h[:type].to_s !~ /breakpoint/i
-				@dbg.pass_current_exception() if h[:type].to_s !~ /access violation/i
+				ret = nil
+				ret = block.call(h) if h[:type].to_s !~ /breakpoint/i
+				#@dbg.pass_current_exception() #if h[:type].to_s !~ /access violation/
+				@dbg.pass_current_exception() unless ret == :exception_handled
 			end
 		end
 		
@@ -136,6 +138,11 @@ module RbWinDBG
 		def bpw(addr, mLen = 1, one_time = false, &block)
 			addr = self.resolve_name(addr) if addr.is_a?(String)
 			@dbg.hwbp(addr, :w, mLen, nil) { block.call } unless addr.nil?
+		end
+		
+		def hwbp(addr, mode, one_time = false, mLen = 1, &block)
+			addr = self.resolve_name(addr) if addr.is_a?(String)
+			@dbg.hwbp(addr, mode, mLen, one_time) { block.call } unless addr.nil?
 		end
 		
 		# Continue execution till addr
@@ -389,11 +396,14 @@ module RbWinDBG
 		sdbg
 	end
 	
-	def self.start(path, params=[])
+	def self.start(path, cmd = nil)
 		pe = Metasm::PE.decode_file(path)
 		
-		cmdline = path
-		cmdline += params.join(' ') unless params.empty?
+		if cmd.nil?
+			cmdline = path
+		else
+			cmdline = "\"#{path}\" #{cmd}"
+		end
 		
 		process = Metasm::WinOS.create_process(cmdline)
 		dbg = process.debugger()
