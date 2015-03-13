@@ -14,7 +14,7 @@ if __FILE__ == $0
 		
 		puts "CreateFileW: 0x%08x" % dbg.resolve_name('kernel32.dll!CreateFileW')
 		puts "GetMessageA: 0x%08x" % dbg.resolve_name('user32.dll!GetMessageA')
-		puts "VirtualProtectEx: 0x%08x" % dbg.resolve_name('kernel32!VirtualProtectEx')
+		puts "VirtualProtectEx: 0x%08x" % dbg.resolve_name('KERNELBASE.DLL!VirtualProtectEx')
 		
 		#$stdin.gets
 		
@@ -64,7 +64,7 @@ Exeption: {:type=>"access violation", :st=>struct _EXCEPTION_RECORD x = {
 			$expt ||= 0
 			$expt += 1
 			
-			exit if $expt > 10
+			exit if $expt > 1000
 		end
 		
 =begin

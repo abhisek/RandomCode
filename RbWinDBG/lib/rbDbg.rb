@@ -280,7 +280,7 @@ module RbWinDBG
 		end
 		
 		def single_step
-			@dbg.singlestep
+			@dbg.singlestep_wait
 		end
 		
 		def start
@@ -315,7 +315,6 @@ module RbWinDBG
 		def get_module(dll_name)
 			self.list_modules.each do |mod|
 				next if mod.path.to_s.empty?
-				
 				return mod if File.basename(mod.path).downcase == File.basename(dll_name.to_s).downcase
 			end
 			
@@ -380,6 +379,11 @@ module RbWinDBG
 			s.restore!
 			
 			return s
+		end
+		
+		def symbols
+			@symbols ||= ::SymbolProcessor.new(self.process, self.process.handle, self.process.addrsz)
+			return @symbols
 		end
 	end
 	
